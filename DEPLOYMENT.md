@@ -83,8 +83,18 @@ GitHub 토큰만으로는 Pages를 처음 켤 수 없어, 저장소 소유자가
 
 ### 3-3. 「마지막 소유자」 리더 재생성
 
-리더는 장별 Markdown에서 생성된 자체 완결형 HTML입니다. 원고가 바뀌면 같은 디자인으로
-다시 만들어 교체합니다. (생성 스크립트가 필요하면 요청 시 이 저장소에 함께 보관합니다.)
+리더는 장별 Markdown에서 생성된 자체 완결형 HTML입니다. 원고가 바뀌면 생성 스크립트
+[`tools/build_reader.py`](tools/build_reader.py)로 같은 디자인의 리더를 다시 만들어 교체합니다.
+
+```bash
+# 사용법: build_reader.py <manuscript_dir> <출력 index.html>
+python3 tools/build_reader.py the-last-owner/manuscript the-last-owner/index.html
+```
+
+스크립트는 `manuscript/chapter_*.md`의 `# N. 제목` 헤더로 차례를 만들고, `* * *` 장면
+전환·백틱(`` ` ``) 화면/기록 텍스트·인라인 표기를 처리해 표지·차례·전 장을 담은 단일
+HTML을 출력합니다. 제목·표지 문구 등은 스크립트 상단 상수(`TITLE`, `TAGLINE` 등)에서
+바꿉니다.
 
 ---
 
