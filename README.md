@@ -23,3 +23,5 @@
 
 `.github/workflows/deploy-pages.yml`가 `main` 푸시 시 GitHub Pages로 자동 배포합니다.
 자동 활성화가 막히면 저장소 Settings → Pages → Source를 **GitHub Actions**로 한 번만 지정하세요.
+
+운영·갱신 방법은 **[DEPLOYMENT.md](DEPLOYMENT.md)** 참고.
