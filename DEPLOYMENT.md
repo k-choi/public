@@ -158,7 +158,16 @@ curl -s https://k-choi.github.io/public/the-last-owner/ | grep -c '새 판에만
 ```
 
 `0`이면 아직 게시되지 않은 것입니다. 실행이 아예 생기지 않았다면 Actions 탭에서
-수동 실행을 걸고, 그래도 `queued`에 머물면 러너·사용량 쪽 문제입니다.
+수동 실행(`workflow_dispatch`)을 겁니다. 30분 넘게 `queued`에 머물면 그 실행을
+취소하고 다시 거세요. 실제로 그렇게 해서 러너가 붙었습니다.
+
+**확인은 grep 한 줄이 아니라 다이제스트로 합니다.** 리더는 자체 완결형 파일
+하나이므로 양쪽 `md5sum`이 정확하고 비용이 없습니다.
+
+```bash
+curl -s https://k-choi.github.io/public/the-last-owner/ | md5sum
+md5sum the-last-owner/index.html
+```
 
 - 워크플로 상태는 저장소 **Actions** 탭의 "Deploy Pages" 실행에서 확인합니다.
 - 방금 올린 내용이 반영됐는지는 로컬 파일과 라이브 응답을 비교하면 확실합니다.
