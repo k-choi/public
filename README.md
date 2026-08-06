@@ -9,7 +9,7 @@
 | # | 작품 | 장르 | 분량 | 경로 |
 |---|------|------|------|------|
 | 01 | **오차 범위** | 현대 로맨스 스릴러 | 전 4부 28장 | [`/margin-of-error/`](https://k-choi.github.io/public/margin-of-error/) |
-| 02 | **마지막 소유자** | 사변적 가족소설 · 심리 서스펜스 | 전 30장 | [`/the-last-owner/`](https://k-choi.github.io/public/the-last-owner/) |
+| 02 | **마지막 소유자** | 사변적 가족소설 · 심리 서스펜스 | 전 28장 | [`/the-last-owner/`](https://k-choi.github.io/public/the-last-owner/) |
 
 각 작품 폴더 구성:
 
