@@ -96,6 +96,40 @@ python3 tools/build_reader.py the-last-owner/manuscript the-last-owner/index.htm
 HTML을 출력합니다. 제목·표지 문구 등은 스크립트 상단 상수(`TITLE`, `TAGLINE` 등)에서
 바꿉니다.
 
+#### 정본은 `NovelWriting/public-site/tools/build_reader.py` 쪽입니다
+
+이 파일은 그 정본의 사본입니다. 두 벌이 있는 한 갈라지고, 실제로 갈라졌습니다.
+
+한때 이 저장소의 사본이 53줄 뒤처져 있었습니다. 그 사본으로 다시 만들면 진행
+표시줄, 현재 장 표시, 차례 버튼, 스크롤 레일이 전부 사라진 `index.html`이 나옵니다.
+빌드는 성공하고, 장 수도 맞고, 본문도 같습니다. 없어진 것은 기능뿐이라 커밋
+직전에 보면 정상으로 읽힙니다.
+
+**다시 만들기 전에 두 벌을 대조하고, 만든 뒤에 diff를 읽으세요.**
+
+```bash
+diff tools/build_reader.py ../NovelWriting/public-site/tools/build_reader.py
+python3 tools/build_reader.py the-last-owner/manuscript the-last-owner/index.html
+git diff --stat the-last-owner/index.html
+```
+
+원고를 한 문단 고쳤는데 `index.html`에서 수십 줄이 사라졌다면, 바뀐 것은 원고가
+아니라 스크립트입니다.
+
+`_full-novel.md`는 생성 스크립트가 없습니다. 장 사이는 빈 줄 **두 개**입니다.
+
+```bash
+python3 - <<'EOF'
+import pathlib
+base = pathlib.Path("the-last-owner/manuscript")
+parts = [f.read_text(encoding="utf-8").strip() for f in sorted(base.glob("chapter_*.md"))]
+pathlib.Path("the-last-owner/_full-novel.md").write_text("\n\n\n".join(parts) + "\n", encoding="utf-8")
+EOF
+```
+
+빈 줄 하나로 이으면 원고를 두 문단만 고쳐도 27줄이 함께 바뀝니다. 그 27줄은
+diff를 읽을 수 없게 만들고, 읽을 수 없는 diff는 검토되지 않습니다.
+
 ---
 
 ## 4. 배포 확인
