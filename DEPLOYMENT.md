@@ -141,6 +141,25 @@ curl -s -o /dev/null -w '%{http_code}\n' https://k-choi.github.io/public/margin-
 curl -s -o /dev/null -w '%{http_code}\n' https://k-choi.github.io/public/the-last-owner/
 ```
 
+#### 푸시는 게시가 아닙니다 — 라이브 바이트로 확인하세요
+
+`git push`가 성공해도 사이트는 그대로일 수 있습니다. 배포는 별도의 워크플로가
+실제로 **실행되어야** 일어납니다.
+
+한 세션에서 다섯 번 푸시했는데 그 커밋 어느 것에 대해서도 실행이 생기지 않은
+일이 있었습니다. 마지막 push 트리거 실행은 그보다 12시간 전이었고, 그동안
+라이브 페이지는 낡은 바이트를 계속 내보냈습니다. 수동 실행
+(`workflow_dispatch`)을 걸어도 30분 넘게 `queued`에 머물렀습니다.
+
+**푸시 출력이 아니라 새 판에만 있는 문자열로 확인합니다.**
+
+```bash
+curl -s https://k-choi.github.io/public/the-last-owner/ | grep -c '새 판에만 있는 문장'
+```
+
+`0`이면 아직 게시되지 않은 것입니다. 실행이 아예 생기지 않았다면 Actions 탭에서
+수동 실행을 걸고, 그래도 `queued`에 머물면 러너·사용량 쪽 문제입니다.
+
 - 워크플로 상태는 저장소 **Actions** 탭의 "Deploy Pages" 실행에서 확인합니다.
 - 방금 올린 내용이 반영됐는지는 로컬 파일과 라이브 응답을 비교하면 확실합니다.
   ```bash
@@ -157,7 +176,8 @@ curl -s -o /dev/null -w '%{http_code}\n' https://k-choi.github.io/public/the-las
 
 | 증상 | 원인 / 해결 |
 |------|-------------|
-| 푸시했는데 안 바뀜 | 배포 지연 또는 CDN 캐시. 1분 뒤 재확인. Actions에서 실행 성공 여부 확인. |
+| 푸시했는데 안 바뀜 | 먼저 **실행이 생겼는지** 확인. 없으면 수동 실행. 있으면 배포 지연 또는 CDN 캐시. |
+| 푸시했는데 실행 자체가 안 생김 | Actions 탭에서 `workflow_dispatch`로 수동 실행. 계속 `queued`면 러너·사용량 문제이고 이쪽에서 할 수 있는 일이 없음. |
 | 워크플로 첫 실행 실패(`Create Pages site failed`) | Pages가 아직 안 켜짐 → Settings → Pages → Source를 `GitHub Actions`로 지정 후 재실행. |
 | 리더는 그대로인데 `manuscript/`만 고침 | 리더(`index.html`)는 본문을 인라인으로 담으므로 **리더도 같이 갱신**해야 함. |
 | 특정 작품만 404 | 해당 `작품-슬러그/index.html`이 있는지, 경로 철자가 맞는지 확인. |
@@ -166,7 +186,8 @@ curl -s -o /dev/null -w '%{http_code}\n' https://k-choi.github.io/public/the-las
 
 ## 6. 요약
 
-- **`main`에 올린 파일 = 라이브 사이트.** 빌드 없음.
+- **`main`에 올린 파일 = 라이브 사이트**, 단 워크플로가 실제로 돌았을 때만. 빌드 단계는 없지만 배포 단계는 있음.
 - 작품마다 **자체 완결형 `index.html`** 하나로 읽힘.
 - 원고 정사는 `k-choi/NovelWriting`, 공개본은 이 저장소.
-- 갱신은 **파일 수정 → `main` 푸시 → 자동 배포 → 확인** 순서.
+- 갱신은 **파일 수정 → `main` 푸시 → 배포 실행 확인 → 라이브 바이트 확인** 순서.
+- 마지막 단계를 건너뛰면 푸시를 게시로 착각하게 됩니다. 실제로 그랬습니다.
