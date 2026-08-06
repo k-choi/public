@@ -89,7 +89,8 @@ def main():
     # chapters
     secs = []
     for num, title, blocks in chapters:
-        s = [f'<section class="chapter" id="ch{num}">',
+        s = [f'<section class="chapter" id="ch{num}" '
+             f'data-idx="{num:02d}" data-title="{esc(title)}">',
              f'  <header class="ch-open"><span class="ch-idx">{num:02d}'
              f'<span class="ch-tot"> / {total}</span></span>'
              f'<h2 class="ch-title">{esc(title)}</h2></header>']
@@ -141,6 +142,17 @@ a{{color:inherit}}
 .bar a.home{{color:var(--muted);text-decoration:none}}
 .bar a.home:hover{{color:var(--fg)}}
 .bar .b-r{{display:flex;gap:.5rem;align-items:center}}
+.bar .b-c{{flex:1 1 auto;min-width:0;text-align:center;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 .9rem;opacity:0;
+  transition:opacity .25s ease}}
+.bar .b-c.on{{opacity:1}}
+.bar .b-c i{{font-style:normal;color:var(--accent);letter-spacing:.16em}}
+.bar .b-c s{{text-decoration:none;color:var(--fg)}}
+.bar .rail{{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:transparent}}
+.bar .rail i{{display:block;height:100%;width:0;background:var(--accent);transition:width .1s linear}}
+.toc-row.now{{background:var(--panel)}}
+.toc-row.now .tr-idx{{color:var(--accent)}}
+@media (max-width:640px){{.bar .b-l b{{display:none}}.bar .b-c{{padding:0 .4rem}}}}
 .bar button{{font:inherit;letter-spacing:.14em;color:var(--muted);background:transparent;border:1px solid var(--rule);
   border-radius:2px;padding:.28rem .6rem;cursor:pointer}}
 .bar button:hover{{color:var(--fg);border-color:var(--muted)}}
@@ -198,7 +210,7 @@ a{{color:inherit}}
 </style>
 </head>
 <body id="top">
-<div class="bar"><span class="b-l"><a class="home" href="../">◄ 서가</a> · <b>{title}</b></span><div class="b-r"><button id="themeBtn" aria-label="라이트/다크 전환">◐ THEME</button></div></div>
+<div class="bar"><span class="b-l"><a class="home" href="../">◄ 서가</a> · <b>{title}</b></span><span class="b-c" id="nowCh" aria-live="polite"></span><div class="b-r"><button id="tocBtn" aria-label="차례로">차례</button><button id="themeBtn" aria-label="라이트/다크 전환">◐ THEME</button></div><div class="rail"><i id="railFill"></i></div></div>
 
 <section class="cover">
   <div class="grid-bg"></div>
@@ -246,6 +258,44 @@ a{{color:inherit}}
         d=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
     root.setAttribute('data-theme',d?'light':'dark');
   }});
+  // Which chapter am I in? The bar answers it, and the rail shows how far.
+  var secs=[].slice.call(document.querySelectorAll('section.chapter')),
+      out=document.getElementById('nowCh'),
+      fill=document.getElementById('railFill'),
+      rows=[].slice.call(document.querySelectorAll('.toc-row')),
+      barH=document.querySelector('.bar').offsetHeight,
+      cur=-1,ticking=false;
+  function paint(){{
+    ticking=false;
+    var i,at=-1,y=barH+4;
+    for(i=0;i<secs.length;i++){{ if(secs[i].getBoundingClientRect().top<=y) at=i; }}
+    var doc=document.documentElement,
+        span=doc.scrollHeight-doc.clientHeight;
+    if(fill) fill.style.width=(span>0?Math.min(100,Math.max(0,doc.scrollTop/span*100)):0)+'%';
+    if(at===cur) return;
+    cur=at;
+    if(at<0){{ out.className='b-c'; out.textContent=''; }}
+    else{{
+      var s=secs[at];
+      out.className='b-c on';
+      out.innerHTML='<i>'+s.getAttribute('data-idx')+'</i> · <s></s>';
+      out.querySelector('s').textContent=s.getAttribute('data-title');
+    }}
+    for(i=0;i<rows.length;i++) rows[i].className='toc-row'+(i===at?' now':'');
+  }}
+  function onScroll(){{ if(!ticking){{ ticking=true; requestAnimationFrame(paint); }} }}
+  if(secs.length&&out){{
+    addEventListener('scroll',onScroll,{{passive:true}});
+    addEventListener('resize',function(){{barH=document.querySelector('.bar').offsetHeight;cur=-1;onScroll();}});
+    paint();
+  }}
+  var tb=document.getElementById('tocBtn');
+  tb&&tb.addEventListener('click',function(){{
+    var n=document.querySelector('.toc');
+    n&&n.scrollIntoView({{behavior:reduceOK()?'auto':'smooth',block:'start'}});
+  }});
+  function reduceOK(){{return matchMedia('(prefers-reduced-motion: reduce)').matches;}}
+
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   var p=document.getElementById('openedge');
   if(p&&!reduce){{try{{var L=p.getTotalLength();p.style.transition='none';
